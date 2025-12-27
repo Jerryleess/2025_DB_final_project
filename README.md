@@ -1,15 +1,15 @@
-# 美食查詢系統
-本程式是**2025 資料庫理論**中我們小組的期末專題：美食查詢系統  
+# Foodie Discovery Platform
+This web application is our final projct of Database System Theory: **Foodie Discovery Platform**
 
-## ✨ 概述  
+## ✨ Overview  
 
-本系統為一個美食查詢平台，主要目的是協助使用者依據地點、價格、餐廳類型、評價等多項條件快速查詢各類型美食與餐廳資訊。  
-  
-系統具備會員註冊與登入功能、收藏機制，以及簡易評論與評分系統，提升使用者互動性與便利性。  
-  
-此外，考慮到台北捷運通勤族眾多，系統未來可延伸整合捷運路線資訊，讓使用者依照捷運站點篩選周邊美食，提高查詢效率與實用性。  
+This system is a comprehensive food discovery platform designed to help users efficiently locate restaurants based on specific criteria such as **location, price range, cuisine type, and user ratings**.
 
-## 🧑‍💻 團隊分工  
+The platform features a member authentication system (registration and login), a personal bookmarking mechanism, and an integrated review and rating system to enhance user engagement and convenience.
+
+Looking ahead, to cater to the high volume of commuters in Taipei, the system is designed for future integration with MRT (Mass Rapid Transit) route data. This will enable users to filter dining options by proximity to specific MRT stations, significantly improving search efficiency and practical utility for urban residents. 
+
+## 🧑‍💻 Team work
 ```sh
 boyan1001 (Hank Chen) : Project manager / Backend
 
@@ -20,7 +20,7 @@ Jerryleess : Frontend
 KaiKai-07：Backend 
 ```
 
-## 🧱 結構
+## 🧱 Structure
 
 ```sh
 2025_DB_final_project
@@ -33,8 +33,8 @@ KaiKai-07：Backend
 └── ...
 ```  
 
-## 💪 貢獻者
-感謝下列大大們的貢獻～  
+## 💪 Contributers
+Thanks for your contributions on the project.
   
 <a href="https://github.com/boyan1001/2025_DB_final_project/graphs/contributors">
   <img src="https://contrib.rocks/image?repo=boyan1001/2025_DB_final_project" />
