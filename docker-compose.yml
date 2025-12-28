@@ -1,0 +1,12 @@
+services:
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: foodie-backend
+    ports:
+      - "8000:8000"
+    environment:
+      FRONTEND_URL: http://localhost:3000,http://localhost:5173
+      ALLOW_ORIGINS: true
+    restart: always
