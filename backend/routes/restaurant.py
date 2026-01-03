@@ -1,19 +1,124 @@
+import os
+import base64
+import re
+
 from flask import Blueprint, request, jsonify
 from utils.db import query_all, execute, get_db_connection
-import os, base64
 
 restaurant_bp = Blueprint("restaurant", __name__, url_prefix="/api/restaurants")
 
-# ✅ 產生類似 Google Place ID 的亂碼 restaurant_id
-def generate_unique_restaurant_id():
-    print("🔍 產生唯一的 restaurant_id")
+
+INSERT_RES = """
+IF NOT EXISTS (
+    SELECT 1 FROM [dbo].[Restaurant]
+    WHERE [restaurant_id] = ?
+)
+BEGIN
+    INSERT INTO [dbo].[Restaurant] (
+        [restaurant_id],
+        [owner_id],
+        [name],
+        [address],
+        [phone],
+        [price_range],
+        [rating],
+        [cover],
+        [county],
+        [district],
+        [station_name],
+        [latitude],
+        [longitude]
+    )
+    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+END
+"""
+
+INSERT_CUISINE = """
+IF NOT EXISTS (
+    SELECT 1 FROM [dbo].[Cuisine] WHERE [slug] = ?
+)
+BEGIN
+    INSERT INTO [dbo].[Cuisine] ([name], [slug])
+    VALUES (?, ?)
+END
+"""
+
+GET_CUISINE_ID = "SELECT [id] FROM [dbo].[Cuisine] WHERE [slug] = ?"
+
+INSERT_RES_TO_CUI = """
+IF NOT EXISTS (
+    SELECT 1 FROM [dbo].[Res_to_Cui]
+    WHERE [restaurant_id] = ? AND [cuisine_id] = ?
+)
+BEGIN
+    INSERT INTO [dbo].[Res_to_Cui] ([restaurant_id], [cuisine_id])
+    VALUES (?, ?)
+END
+"""
+
+def generate_unique_restaurant_id(cursor):
     while True:
         rand = os.urandom(9)
         candidate = "ChIJ" + base64.urlsafe_b64encode(rand).decode("utf-8").rstrip("=")
-        exists = query_all("SELECT 1 FROM Restaurant WHERE restaurant_id = %s", (candidate,))
-        print("🔍 檢查 restaurant_id 是否存在:", candidate, "=>", exists)
-        if not exists:
+        cursor.execute("SELECT 1 FROM [dbo].[Restaurant] WHERE [restaurant_id] = ?", (candidate,))
+        if cursor.fetchone() is None:
             return candidate
+
+def slugify(text: str) -> str:
+    text = (text or "").lower()
+    text = re.sub(r"[^\w\s-]", "", text)
+    text = re.sub(r"\s+", "-", text)
+    return text.strip("-")
+
+def insert_restaurant(data: dict, cursor):
+    # 基本欄位保護（避免 KeyError）
+    required = ["restaurant_id", "owner_id", "name", "address", "phone"]
+    missing = [k for k in required if not data.get(k)]
+    if missing:
+        raise Exception(f"restaurant 缺少必要欄位: {', '.join(missing)}")
+
+    # 允許缺省的 nested 欄位
+    district = data.get("district") or {}
+    station_name = data.get("station_name") or {}
+    location = data.get("location") or {}
+
+    cursor.execute(
+        INSERT_RES,
+        data["restaurant_id"],         # IF NOT EXISTS check
+        data["restaurant_id"],         # insert restaurant_id
+        data["owner_id"],
+        data["name"],
+        data["address"],
+        data["phone"],
+        data.get("price_range"),
+        data.get("rating", 0),
+        data.get("cover") or data.get("image"),
+        district.get("county", ""),
+        district.get("district", ""),
+        station_name.get("cn", ""),
+        location.get("latitude"),
+        location.get("longitude"),
+    )
+
+    # cuisine_type 可能是 list 或 None
+    cuisine_list = data.get("cuisine_type") or []
+    for cuisine in cuisine_list:
+        slug = slugify(cuisine)
+        if not slug:
+            continue
+
+        cursor.execute(INSERT_CUISINE, (slug, cuisine, slug))
+
+        cursor.execute(GET_CUISINE_ID, (slug,))
+        row = cursor.fetchone()
+        if not row:
+            raise Exception(f"無法取得 cuisine id: {cuisine}")
+        cuisine_id = row[0]
+
+        cursor.execute(
+            INSERT_RES_TO_CUI,
+            (data["restaurant_id"], cuisine_id, data["restaurant_id"], cuisine_id),
+        )
 
 # 📌 新增店家
 @restaurant_bp.route("", methods=["POST"])

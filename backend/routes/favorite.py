@@ -1,5 +1,5 @@
 from flask import Blueprint, request, jsonify
-from db_config import get_db_connection
+from utils.db_config import get_db_connection
 
 favorite_bp = Blueprint("favorite", __name__, url_prefix="/api/favorites")
 
