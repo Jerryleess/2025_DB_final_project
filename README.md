@@ -15,7 +15,7 @@ boyan1001 (Hank Chen) : Project manager / Backend
 
 linkay1026：Frontend / Backend
 
-Jerryleess : Frontend
+Jerryleess : Frontend / Backed
 
 KaiKai-07：Backend 
 ```
